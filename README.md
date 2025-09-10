@@ -1,4 +1,4 @@
-# 📊 Citation Bias Explorer
+# Citation Bias Explorer
 
 Analyze disparities in scholarly citation counts across **countries** and **institutions**, while controlling for **venue** and **year**.  
 Built with **OpenAlex API**, **PySpark**, and **Streamlit**.
@@ -28,7 +28,7 @@ The results are served in an interactive dashboard that allows filtering by publ
 - **GitHub Actions** for CI (pytest)
 
 ---
-## 🛠️ Project Structure
+## Project Structure
 
 ```
 citation-bias-explorer/
