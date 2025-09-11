@@ -5,3 +5,5 @@ data/raw/
 data/curated/
 .env
 .DS_Store
+*.ipynb
+*/__pycache__/

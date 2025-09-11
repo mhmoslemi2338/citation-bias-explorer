@@ -69,3 +69,11 @@ To set up, copy the example file and update values as needed:
 cp .env.example .env
 ```
 
+
+<!-- ## Quickstart
+1) Create env and install requirements  
+2) Ingest OpenAlex works  
+3) Run ETL to Parquet  
+4) Launch Streamlit app
+
+See sections below for exact commands. -->
