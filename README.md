@@ -46,5 +46,26 @@ citation-bias-explorer/
 │  ├─ etl/        # Spark schema & ETL jobs
 │  ├─ metrics/    # bias metrics & compute scripts
 │  └─ app/        # Streamlit dashboard
-└─ tests/         # unit tests
+└─ tests/ 
+        # unit tests
 ```
+## ⚙️ Project Configuration
+
+This project uses environment variables to manage API settings.  
+An example file `.env.example` is provided:
+
+```env
+OPENALEX_BASE=https://api.openalex.org
+CONTACT_EMAIL= mhmoslemi2338@gmail.com
+FROM_YEAR=2018
+WORKS_MAX_PAGES=200
+WORKS_PER_PAGE=200
+```
+
+
+
+To set up, copy the example file and update values as needed:
+```env
+cp .env.example .env
+```
+
