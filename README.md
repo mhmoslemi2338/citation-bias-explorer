@@ -58,8 +58,9 @@ An example file `.env.example` is provided:
 OPENALEX_BASE=https://api.openalex.org
 CONTACT_EMAIL= mhmoslemi2338@gmail.com
 FROM_YEAR=2018
-WORKS_MAX_PAGES=200
+WORKS_MAX_PAGES=500
 WORKS_PER_PAGE=200
+CONCEPT_ID_FIELD=C154945302 # only get AI field
 ```
 
 
