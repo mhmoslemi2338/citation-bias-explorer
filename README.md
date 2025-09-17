@@ -78,3 +78,20 @@ cp .env.example .env
 4) Launch Streamlit app
 
 See sections below for exact commands. -->
+
+
+
+## Usage
+
+the very first time you run the project, you need to ingest data from OpenAlex and process it into clean datasets. 
+for ingesting data, you can modify the parameters in the `.env` file to control how many works to fetch.
+
+the following commands assume you are in the root directory of the project. this is for ingesting raw and dirty data
+```bash
+python3 -m src.ingest.fetch_works
+```
+
+next step is to run the ETL job to flatten and curate the data. this will create parquet files in `data/curated/`
+```bash
+python3 -m src.etl.spark_jobs
+```
