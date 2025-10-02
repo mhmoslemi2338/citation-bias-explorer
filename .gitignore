@@ -7,3 +7,4 @@ data/curated/
 .DS_Store
 *.ipynb
 */__pycache__/
+tmp/
