@@ -1,4 +1,4 @@
-<!-- # Citation Bias Explorer
+<!-- <!-- # Citation Bias Explorer
 
 Analyze disparities in scholarly citation counts across **countries** and **institutions**, while controlling for **venue** and **year**.  
 Built with **OpenAlex API**, **PySpark**, and **Streamlit**.
@@ -224,7 +224,7 @@ auths = spark.read.parquet('data/curated/authorships.parquet')
 # Citation Bias Explorer
 
 Analyze disparities in scholarly citation counts across **countries** and **institutions**, while controlling for **venue** and **year**.
-Built with **OpenAlex API**, **PySpark**, and **Streamlit**.
+Built with **OpenAlex API**, and **PySpark**.
 
 ---
 
@@ -238,7 +238,7 @@ The results are served in an interactive dashboard that allows filtering by publ
 1. **Ingest**: Fetch scholarly works (journal articles, 2018–present) from OpenAlex API.
 2. **ETL**: Flatten nested authorship and institution data using PySpark.
 3. **Metrics**: Compute normalized citation ratios using a venue–year baseline and group-level indices.
-4. **Dashboard**: Explore disparities across countries and institutions via Streamlit + Plotly.
+<!-- 4. **Dashboard**: Explore disparities across countries and institutions via Streamlit + Plotly. -->
 
 ---
 
@@ -247,9 +247,9 @@ The results are served in an interactive dashboard that allows filtering by publ
 * **Python 3.11**
 * **PySpark** for ETL
 * **Pandas / Plotly** for analytics and visuals
-* **Streamlit** for interactive app
-* **Docker** for containerized deployment
-* **GitHub Actions** for CI (pytest)
+<!-- * **Streamlit** for interactive app -->
+<!-- * **Docker** for containerized deployment -->
+<!-- * **GitHub Actions** for CI (pytest) -->
 
 ---
 
@@ -261,7 +261,7 @@ citation-bias-explorer/
 ├─ requirements.txt
 ├─ .gitignore
 ├─ .env.example
-├─ Dockerfile
+<!-- ├─ Dockerfile -->
 ├─ .github/workflows/ci.yml
 ├─ data/
 │  ├─ raw/        # raw JSONL (ignored by git)
@@ -270,8 +270,8 @@ citation-bias-explorer/
 │  ├─ ingest/     # OpenAlex client and fetch scripts
 │  ├─ etl/        # Spark schema and ETL jobs
 │  ├─ analytics/  # bias metrics, plotting, and run script
-│  └─ app/        # Streamlit dashboard
-└─ tests/         # unit tests
+<!-- │  └─ app/        # Streamlit dashboard -->
+<!-- └─ tests/         # unit tests -->
 ```
 
 ---
@@ -342,7 +342,7 @@ This creates two datasets under `data/curated/`:
 
 ### Step 3: Compute Metrics and Render Plots
 
-After ETL, compute all metrics to CSV and render a rich set of plots to HTML and PNG.
+After ETL, compute all metrics to CSV and render a rich set of plots to PNG.
 
 ```bash
 # Install deps
@@ -654,4 +654,356 @@ inst[inst.n_works >= 500].head(50)
 * Some works lack venue or year. These are dropped from normalization.
 * If `(venue, year)` groups are very small, the baseline falls back to the year average.
 * `institution_names` may contain multiple values in one cell separated by `;`. We explode them before ranking.
-* Country codes come from `countries` in the authorship parquet. If an author has multiple affiliations, each counts.
+* Country codes come from `countries` in the authorship parquet. If an author has multiple affiliations, each counts. -->
+
+
+# Citation Bias Explorer
+
+Analyze disparities in scholarly citation counts across **countries** and **institutions**, while controlling for **venue** and **year**.
+Built with **OpenAlex API**, **PySpark**, and **Pandas**.
+
+---
+
+## 🚀 Overview
+
+This project ingests metadata from the [OpenAlex](https://openalex.org/) API, processes it into clean datasets, and computes normalized citation metrics.
+The results are stored as Parquet files and analytical CSVs with corresponding visualizations.
+
+The purpose is to explore how institutional and geographical affiliation may affect citation impact, normalized for venue and publication year.
+
+**Pipeline**
+
+1. **Ingest** → Fetch scholarly works (journal articles, 2018–present) from OpenAlex.
+2. **ETL** → Flatten nested authorship and institution data using PySpark.
+3. **Metrics** → Compute normalized citation ratios using venue–year baselines and group-level indices.
+4. **Reports** → Generate CSVs + PNG figures for reproducible analytics.
+
+---
+
+## 🧰 Tech Stack
+
+| Layer                       | Tools                             |
+| --------------------------- | --------------------------------- |
+| Language                    | Python 3.11                       |
+| Data Processing             | PySpark 3.5 · Pandas · PyArrow    |
+| Visualization               | Plotly / Matplotlib (offline PNG) |
+| Config & Automation         | python-dotenv · tqdm              |
+| Packaging & Reproducibility | Docker (optional)                 |
+
+---
+
+## 📂 Project Structure
+
+```
+citation-bias-explorer/
+├─ README.md
+├─ requirements.txt
+├─ .env.example
+├─ Dockerfile
+├─ data/
+│  ├─ raw/          # raw JSONL (ignored)
+│  └─ curated/      # parquet & metrics outputs
+├─ src/
+│  ├─ ingest/       # OpenAlex client + fetch script
+│  ├─ etl/          # Spark schema + flatten jobs
+│  ├─ metrics/      # metric computation + plotting
+│  └─ analytics/    # orchestration (run.py)
+└─ reports/         # generated PNG/CSV outputs
+```
+
+---
+
+## ⚙️ Configuration
+
+The pipeline uses environment variables to configure ingestion.
+Copy `.env.example` → `.env` and modify as needed.
+
+```env
+OPENALEX_BASE=https://api.openalex.org
+CONTACT_EMAIL=you@example.com
+FROM_YEAR=2018
+WORKS_MAX_PAGES=500
+WORKS_PER_PAGE=200
+CONCEPT_ID_FIELD=C154945302   # Artificial Intelligence field
+```
+
+---
+
+## 🏃 Quickstart
+
+### 1️⃣ Install dependencies
+
+```bash
+python3 -m venv .venv && source .venv/bin/activate
+pip install -U pip && pip install -r requirements.txt
+```
+
+### 2️⃣ Ingest OpenAlex Data
+
+Fetch raw JSONL records via API pagination.
+
+```bash
+python -m src.ingest.fetch_works
+```
+
+### 3️⃣ Run the ETL Job (Spark)
+
+Flatten and curate the raw dataset into Parquet.
+
+```bash
+python -m src.etl.spark_jobs \
+  --input data/raw/works.jsonl \
+  --works_path data/curated/works.parquet \
+  --auth_path  data/curated/authorships.parquet \
+  --repartition 8 \
+  --print_schema
+```
+
+This produces:
+
+* `data/curated/works.parquet/`
+* `data/curated/authorships.parquet/`
+
+Each is a directory of partitioned `.snappy.parquet` files.
+
+### 4️⃣ Compute Metrics and Generate Plots
+
+```bash
+python -m src.metrics.run \
+  --works data/curated/works.parquet \
+  --auth  data/curated/authorships.parquet \
+  --metrics-out data/curated/metrics \
+  --reports-out reports \
+  --min-year 2023 \
+  --top-countries US CN GB DE FR CA
+```
+
+---
+
+## 🥮 Normalization Logic
+
+Every paper receives a normalized citation index:
+
+[
+\text{norm_cites} =
+\frac{\text{cited_by_count}}
+{\mathbb{E}[\text{cited_by_count}\mid \text{venue},,\text{year}]}
+]
+
+If a `(venue, year)` group is too small, the baseline falls back to the yearly mean to avoid instability.
+Values above 1 → performance above venue–year expectation.
+
+---
+
+## 🧾 Dataset Descriptions
+
+### Works Dataset
+
+| Column           | Description                     |
+| ---------------- | ------------------------------- |
+| `work_id`        | Unique OpenAlex work identifier |
+| `title`          | Paper title                     |
+| `year`           | Publication year                |
+| `venue`          | Journal or source name          |
+| `cited_by_count` | Citation count                  |
+| `source_issn_l`  | Journal ISSN                    |
+| `is_oa`          | Open-access flag                |
+
+### Authorships Dataset
+
+| Column             | Description                         |
+| ------------------ | ----------------------------------- |
+| `work_id`          | Related work ID                     |
+| `author_id`        | Author identifier                   |
+| `author_name`      | Author name                         |
+| `author_pos`       | Author position (first/middle/last) |
+| `institution_id`   | Institution ID                      |
+| `institution_name` | Institution display name            |
+| `country_code`     | ISO-2 country code                  |
+| `is_corresponding` | Boolean (if available)              |
+
+---
+
+## 📊 Main Output Metrics
+
+| Metric                           | CSV                                | Figure                             | Interpretation                               |
+| -------------------------------- | ---------------------------------- | ---------------------------------- | -------------------------------------------- |
+| **Country advantage**            | `country_advantage.csv`            | `country_advantage_bar.png`        | Mean normalized citations per country        |
+| **Top-decile share**             | `country_top_decile_share.csv`     | `country_top_decile_bar.png`       | Fraction of papers in top 10 % globally      |
+| **Country trend**                | `country_trend.csv`                | `country_trend.png`                | Mean normalized citations over time          |
+| **Team size curve**              | `team_size_curve.csv`              | `team_size_curve.png`              | Collaboration size vs. impact                |
+| **International premium**        | `international_premium.csv`        | `international_premium.png`        | Multi-country vs. single-country performance |
+| **Venue rank**                   | `venue_rank.csv`                   | `venue_rank.png`                   | Post-normalization venue stability           |
+| **Global year trend**            | `global_year_trend.csv`            | `global_year_trend.png`            | Median/mean drift per year                   |
+| **Author position effect**       | `author_position_effect.csv`       | `author_position_effect.png`       | Citation bias by author role                 |
+| **Corresponding author premium** | `corresponding_author_premium.csv` | `corresponding_author_premium.png` | Whether corresponding authors gain advantage |
+
+Example figure:
+
+![Country advantage bar](reports/country_advantage_bar.png)
+
+---
+
+## 🧠 Reading the Results
+
+* **> 1** → group performs above its venue–year baseline.
+* Compare **mean vs median** to test outlier influence.
+* Use **n_works** (volume) to judge metric reliability.
+* Country trends should be checked alongside field filters (`CONCEPT_ID_FIELD`).
+
+---
+
+## 📈 Result Sections (Generated Automatically)
+
+### 1. Country Advantage
+
+* File: `data/curated/metrics/country_advantage.csv`
+* Figure: `reports/country_advantage_bar.png`
+* Shows the relative advantage (normalized mean) per country.
+
+### 2. Country Share of Top-Decile Works
+
+* File: `data/curated/metrics/country_top_decile_share.csv`
+* Figure: `reports/country_top_decile_bar.png`
+* Indicates how many papers fall in the global top 10 %.
+
+### 3. Country Trend Over Time
+
+* File: `data/curated/metrics/country_trend.csv`
+* Figure: `reports/country_trend.png`
+* Tracks citation advantage trends per year.
+
+### 4. Distribution of Normalized Citations
+
+* File: `data/curated/metrics/works_norm.csv`
+* Figure: `reports/norm_hist.png`
+* Shows global distribution shape and skew.
+
+### 5. Team Size Curve
+
+* File: `data/curated/metrics/team_size_curve.csv`
+* Figure: `reports/team_size_curve.png`
+* Relationship between collaboration size and normalized impact.
+
+### 6. International Collaboration Premium
+
+* File: `data/curated/metrics/international_premium.csv`
+* Figure: `reports/international_premium.png`
+* Difference between single- and multi-country works.
+
+### 7. Venue Rank Check
+
+* File: `data/curated/metrics/venue_rank.csv`
+* Figure: `reports/venue_rank.png`
+* Verifies that normalization neutralizes venue bias.
+
+### 8. Global Year Trend
+
+* File: `data/curated/metrics/global_year_trend.csv`
+* Figure: `reports/global_year_trend.png`
+* Stability check across time.
+
+### 9. Author Position Effect
+
+* File: `data/curated/metrics/author_position_effect.csv`
+* Figure: `reports/author_position_effect.png`
+* Bias linked with first/last authorship.
+
+### 10. Corresponding Author Premium
+
+* File: `data/curated/metrics/corresponding_author_premium.csv`
+* Figure: `reports/corresponding_author_premium.png`
+* Impact differential for corresponding authors.
+
+---
+
+## 🧤 Verify & Slice in Pandas
+
+```python
+import pandas as pd
+m = 'data/curated/metrics'
+
+ca   = pd.read_csv(f'{m}/country_advantage.csv')
+cts  = pd.read_csv(f'{m}/country_top_decile_share.csv')
+trend= pd.read_csv(f'{m}/country_trend.csv')
+inst = pd.read_csv(f'{m}/institution_scores.csv')
+
+# Compare two countries
+ca.query('country_code in ["US","CN"]')
+
+# Top institutions with ≥500 works
+inst[inst.n_works >= 500].head(20)
+```
+
+---
+
+## 🧹 Data Quality Notes
+
+* Works missing `venue` or `year` are dropped before normalization.
+* `(venue, year)` groups with small counts fallback to year-level baselines.
+* `institution_names` may include multiple entries separated by `;`.
+* Multi-affiliation authors contribute once per country.
+* Normalization can be recomputed per field by filtering on `CONCEPT_ID_FIELD`.
+
+---
+
+## 🧳 Status & Roadmap
+
+| Component            | Status     | Description                           |
+| -------------------- | ---------- | ------------------------------------- |
+| Ingest + ETL         | ✅ Done     | Stable, reproducible Parquet pipeline |
+| Metrics + Plots      | ✅ Done     | Generates CSV + PNG reports           |
+| Streamlit Dashboard  | ⏳ Planned  | Lightweight viewer for exploration    |
+| Unit Tests / CI      | ⏳ Planned  | Pytest suite + GitHub Actions         |
+| Field-Level Analysis | ⏳ Optional | Add multi-field filter support        |
+
+---
+
+## 🧩 Example Outputs (Summary)
+
+| Country | Advantage |  Works |
+| ------- | --------: | -----: |
+| US      |      1.12 | 12 340 |
+| GB      |      1.08 |  3 210 |
+| DE      |      1.05 |  2 980 |
+| FR      |      1.04 |  2 600 |
+| CN      |      0.95 | 11 200 |
+
+*(Numbers illustrative; recompute on your data.)*
+
+---
+
+## 🛍️ Reproducibility Checklist
+
+1. Environment pinned in `requirements.txt`.
+2. `.env` fully defines API and field filters.
+3. Each stage produces deterministic outputs (ETL → Parquet → CSV → PNG).
+4. Randomness only arises from API sampling limits.
+
+---
+
+## 📜 Citation
+
+If using this project or its derived metrics:
+
+```
+Moslemi M.H. (2025). Citation Bias Explorer – Analyzing Global Citation Disparities with OpenAlex and PySpark. GitHub repository.
+```
+
+---
+
+## 👨‍💻 Author
+
+**Mohammad Hossein Moslemi**
+📧 [mohammad.moslemi@uwo.ca](mailto:mohammad.moslemi@uwo.ca)  |  [GitHub](https://github.com/mhmoslemi2338)  |  [Scholar](https://scholar.google.com/citations?user=vfufSS0AAAAJ)
+Western University, London ON, Canada
+
+---
+
+## 🚪 License
+
+MIT License © 2025 Mohammad Hossein Moslemi
+
+---
+
+**Status:** v1.0 (ingestion + ETL + analytics pipeline complete; visualization and CI planned)
