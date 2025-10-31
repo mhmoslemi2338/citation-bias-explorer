@@ -2,9 +2,9 @@
 __pycache__/
 .ipynb_checkpoints/
 data/raw/
-data/curated/
+# data/curated/
 .env
 .DS_Store
-*.ipynb
+# *.ipynb
 */__pycache__/
-tmp/
+# tmp/
